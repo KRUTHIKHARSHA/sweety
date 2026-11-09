@@ -1,0 +1,41 @@
+const paths = {
+  drop: 'M12 2C9 6 5 10 5 14a7 7 0 0 0 14 0c0-4-4-8-7-12Z M8.5 14.5a3.5 3.5 0 0 0 3.5 3.5',
+  grid: 'M3 3h7v7H3z M14 3h7v7h-7z M3 14h7v7H3z M14 14h7v7h-7z',
+  list: 'M9 5h12 M9 12h12 M9 19h12 M3 5h1 M3 12h1 M3 19h1',
+  chart: 'M3 3v18h18 M8 16v-4 M13 16V8 M18 16v-6',
+  exit: 'M11 4H5v16h6 M10 12h11 M17 8l4 4-4 4',
+  plus: 'M12 5v14 M5 12h14',
+  sunrise: 'M3 18h18 M7 18a5 5 0 0 1 10 0 M12 3v7 M9 6l3-3 3 3 M4 11l2 2 M20 11l-2 2',
+  coffee: 'M4 8h13v5a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5Z M17 9h2a2 2 0 0 1 0 4h-2 M3 21h17 M8 3v2 M13 3v2',
+  sun: 'M12 2v2 M12 20v2 M2 12h2 M20 12h2 M5 5l1.5 1.5 M17.5 17.5 19 19 M5 19l1.5-1.5 M17.5 6.5 19 5 M16 12a4 4 0 1 1-8 0 4 4 0 0 1 8 0Z',
+  moon: 'M20.9 13.35A9 9 0 0 1 10.65 3.1 9 9 0 1 0 20.9 13.35Z',
+  edit: 'M13.5 6.5l4 4 M4 20l4-.7L20 7.3 16.7 4 4.7 16Z',
+  trash: 'M3 6h18 M9 6V3h6v3 M6 6l1 15h10l1-15 M10 10v7 M14 10v7',
+  close: 'M6 6l12 12 M18 6 6 18',
+  calendar: 'M4 5h16v15H4z M4 10h16 M8 3v4 M16 3v4',
+  check: 'M5 12l4 4L19 6',
+};
+
+export function Icon({ name, size = 20 }) {
+  return <svg aria-hidden="true" width={size} height={size} viewBox="0 0 24 24"
+    fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+    <path d={paths[name]} />
+  </svg>;
+}
+
+export function Brand() {
+  return <div className="brand"><span className="brand-icon"><Icon name="drop" size={23} /></span>
+    <div><strong>Sweety</strong><small>GLUCOSE TRACKER</small></div>
+  </div>;
+}
+
+const dateFormat = new Intl.DateTimeFormat('en-GB', {
+  day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC',
+});
+export function formatDate(date) {
+  return dateFormat.format(new Date(date + 'T00:00:00Z'));
+}
+
+export function ErrorText({ children }) {
+  return children ? <p className="error" role="alert">{children}</p> : null;
+}
