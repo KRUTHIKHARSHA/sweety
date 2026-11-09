@@ -24,7 +24,6 @@ small { font-size: .8rem; }
 .muted { color: var(--muted); line-height: 1.55; }
 .brand, .profile, .button, .text-button, .sign-out, .notice { display: flex; align-items: center; gap: 10px; }
 .brand strong { display: block; font-size: 1.45rem; line-height: 1; letter-spacing: -.04em; }
-.brand small { display: block; font-size: .61rem; letter-spacing: .16em; margin-top: 6px; color: #adcdc3; }
 .brand-icon, .slot-icon, .avatar {
   display: inline-grid; place-items: center; flex: none; width: 43px; height: 43px; border-radius: 13px;
 }
@@ -54,6 +53,12 @@ small { font-size: .8rem; }
   background: #192e25; color: #f4fbf7;
 }
 .sidebar .brand { padding-left: 7px; }
+.mobile-header { display: none; }
+.menu-button {
+  display: inline-grid; place-items: center; flex: none; width: 44px; height: 44px;
+  border: 1px solid #496554; border-radius: 9px; color: #f4fbf7; background: #223a2f;
+}
+.menu-button:hover { background: #30493b; }
 .sidebar nav { margin-top: 32px; padding-top: 18px; border-top: 1px solid #36594f; display: grid; gap: 5px; }
 .sidebar nav button, .sign-out { display: flex; align-items: center; text-align: left; gap: 10px; border: 1px solid transparent;
   padding: 11px 10px; border-radius: 8px; color: #cce0d9; background: transparent; font-size: .94rem; }
@@ -218,6 +223,22 @@ form label { display: grid; gap: 6px; font-size: .9rem; font-weight: 650; }
 .switch-auth .text-button { display: inline; }
 dialog { width: min(calc(100% - 30px), 440px); color: var(--ink); border: 1px solid var(--border); border-radius: 16px; padding: 23px; }
 dialog::backdrop { background: #112c27a8; }
+.mobile-drawer {
+  position: fixed; inset: 0 auto 0 0; width: min(320px, calc(100% - 40px)); height: 100%;
+  max-height: none; max-width: none; margin: 0; padding: 0; border: 0; border-radius: 0;
+  background: #192e25; box-shadow: 12px 0 35px #10271f42;
+}
+.mobile-drawer .sidebar { position: static; height: 100%; overflow-y: auto; padding: 18px 16px; }
+.drawer-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.mobile-drawer .brand { padding: 0; }
+.mobile-drawer nav { margin-top: 22px; margin-bottom: 22px; }
+.drawer-header, .mobile-drawer nav, .mobile-drawer .account { flex-shrink: 0; }
+@media (prefers-reduced-motion: no-preference) {
+  .mobile-drawer[open] { animation: drawer-in .18s ease-out; }
+}
+@keyframes drawer-in {
+  from { transform: translateX(-100%); }
+}
 .dialog-title, .dialog-actions { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 16px; }
 .dialog-actions { justify-content: flex-end; margin: 4px 0 0; }
 .input-hint { font-size: .82rem; margin-top: -8px; }
@@ -228,16 +249,12 @@ dialog::backdrop { background: #112c27a8; }
 }
 @media (max-width: 720px) {
   .workspace { display: block; }
-  .sidebar { height: auto; position: static; padding: 14px 16px 9px; display: grid; grid-template-columns: 1fr auto; gap: 12px; }
-  .sidebar .brand { padding: 0; }
-  .sidebar nav { grid-row: 2; grid-column: 1 / -1; display: flex; margin: 0; padding: 0; border: 0; }
-  .sidebar nav button { padding: 8px; font-size: .8rem; gap: 5px; }
-  .sidebar nav svg { width: 15px; }
-  .profile { padding: 0; }
-  .profile > div { display: none; }
-  .account { display: flex; align-items: center; gap: 5px; margin: 0; padding: 0; border: 0; align-self: center; }
-  .account .avatar { width: 31px; height: 31px; }
-  .sign-out { padding: 9px 6px; }
+  .desktop-sidebar { display: none; }
+  .mobile-header {
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    padding: 12px 16px; background: #192e25; color: #f4fbf7;
+  }
+  .mobile-header .brand-icon { width: 36px; height: 36px; border-radius: 10px; }
   .content { padding: 25px 16px; gap: 17px; }
   .auth-layout { grid-template-columns: 1fr; }
   .auth-intro { min-height: 220px; padding: 22px 24px; gap: 58px; background-position: center, center 48%; }

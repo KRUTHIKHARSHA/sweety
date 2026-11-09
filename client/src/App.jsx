@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { SLOTS, slotLabel } from '../../shared/slots.js';
 import { api } from './api.js';
 import Auth from './Auth.jsx';
@@ -13,8 +13,29 @@ const pages = [
   { id: 'reports', label: 'Reports', icon: 'chart', description: 'Compare your daily and monthly glucose summaries.' },
 ];
 
+function SidebarContent({ page, user, signingOut, onNavigate, onSignOut }) {
+  return <>
+    <nav aria-label="Main navigation">
+      {pages.map((item) => <button key={item.id} type="button"
+        aria-current={item.id === page.id ? 'page' : undefined} onClick={() => onNavigate(item)}>
+        <Icon name={item.icon} size={19} /> {item.label}
+      </button>)}
+    </nav>
+    <div className="account">
+      <div className="profile"><Avatar user={user} />
+        <div><strong>{user.name}</strong><small>Personal account</small></div>
+      </div>
+      <button type="button" className="sign-out" disabled={signingOut} onClick={onSignOut}>
+        <Icon name="exit" size={18} /> Sign out
+      </button>
+    </div>
+  </>;
+}
+
 function Workspace({ session, onUnauthorized }) {
   const [page, setPage] = useState(pages[0]);
+  const drawer = useRef(null);
+  const [menuOpen, setMenuOpen] = useState(false);
   const [today, setToday] = useState(session.today);
   const [date, setDate] = useState(session.today);
   const [readings, setReadings] = useState(null);
@@ -23,6 +44,15 @@ function Workspace({ session, onUnauthorized }) {
   const [notice, setNotice] = useState('');
   const [attempt, setAttempt] = useState(0);
   const [signingOut, setSigningOut] = useState(false);
+
+  useEffect(() => {
+    const mobile = window.matchMedia('(max-width: 720px)');
+    function closeOnDesktop(event) {
+      if (!event.matches && drawer.current.open) drawer.current.close();
+    }
+    mobile.addEventListener('change', closeOnDesktop);
+    return () => mobile.removeEventListener('change', closeOnDesktop);
+  }, []);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -80,22 +110,38 @@ function Workspace({ session, onUnauthorized }) {
     }
   }
 
+  const navigation = <SidebarContent page={page} user={session.user} signingOut={signingOut}
+    onNavigate={(item) => {
+      drawer.current.close();
+      setPage(item);
+      setNotice('');
+    }} onSignOut={() => { drawer.current.close(); signOut(); }} />;
+
   return <div className="workspace">
-    <aside className="sidebar">
+    <header className="mobile-header">
       <Brand />
-      <nav aria-label="Main navigation">
-        {pages.map((item) => <button key={item.id} type="button"
-          aria-current={item.id === page.id ? 'page' : undefined} onClick={() => { setPage(item); setNotice(''); }}>
-          <Icon name={item.icon} size={19} /> {item.label}
-        </button>)}
-      </nav>
-      <div className="account">
-        <div className="profile"><Avatar user={session.user} />
-          <div><strong>{session.user.name}</strong><small>Personal account</small></div>
-        </div>
-        <button type="button" className="sign-out" disabled={signingOut} onClick={signOut}><Icon name="exit" size={18} /> Sign out</button>
-      </div>
+      <button type="button" className="menu-button" aria-label="Open menu" aria-haspopup="dialog"
+        aria-controls="workspace-menu" aria-expanded={menuOpen}
+        onClick={() => { drawer.current.showModal(); setMenuOpen(true); }}>
+        <Icon name="menu" size={22} />
+      </button>
+    </header>
+    <aside className="sidebar desktop-sidebar">
+      <Brand />
+      {navigation}
     </aside>
+    <dialog ref={drawer} className="mobile-drawer" id="workspace-menu" aria-label="Workspace menu"
+      onClose={() => setMenuOpen(false)}
+      onClick={(event) => { if (event.target === event.currentTarget) drawer.current.close(); }}>
+      <div className="sidebar">
+        <div className="drawer-header">
+          <Brand />
+          <button type="button" className="menu-button" aria-label="Close menu" autoFocus
+            onClick={() => drawer.current.close()}><Icon name="close" size={22} /></button>
+        </div>
+        {navigation}
+      </div>
+    </dialog>
     <main className="content">
       <header className="page-header">
         <div><h1>{page.label}</h1><p className="muted">{page.description}</p></div>

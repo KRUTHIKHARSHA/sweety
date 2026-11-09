@@ -1,6 +1,7 @@
 import sweetyMark from './assets/sweety-mark.svg';
 
 const paths = {
+  menu: 'M4 6h16 M4 12h16 M4 18h16',
   grid: 'M3 3h7v7H3z M14 3h7v7h-7z M3 14h7v7H3z M14 14h7v7h-7z',
   list: 'M9 5h12 M9 12h12 M9 19h12 M3 5h1 M3 12h1 M3 19h1',
   chart: 'M3 3v18h18 M8 16v-4 M13 16V8 M18 16v-6',
@@ -30,7 +31,7 @@ export function Icon({ name, size = 20 }) {
 
 export function Brand() {
   return <div className="brand"><img className="brand-icon" src={sweetyMark} alt="" width="43" height="43" />
-    <div><strong>Sweety</strong><small>GLUCOSE TRACKER</small></div>
+    <strong>Sweety</strong>
   </div>;
 }
 
