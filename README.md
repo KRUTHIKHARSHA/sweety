@@ -66,7 +66,7 @@ The suite applies the real schema in a randomly named schema inside the test dat
 - **Authentication.** bcrypt hashes each password. Express generates a random session token and sends it as an HttpOnly, SameSite=Strict cookie. PostgreSQL stores only a SHA-256 digest of the token. Sessions expire after seven days and logout revokes the session. Server-side sessions make revocation immediate and keep authentication details out of React state and browser storage.
 - **Ownership.** Express resolves the user from the session and passes that ID into every reading and report query. Updates and deletes match the reading ID and the owner ID in the same SQL statement. An unknown ID and another account's ID both return 404.
 - **Four readings per day.** PostgreSQL restricts slots to four fixed values and makes `(user_id, reading_date, time_slot)` unique. The unique constraint also handles simultaneous submissions. Express turns a conflict into a message naming the occupied slot.
-- **Reports.** PostgreSQL aggregates each inclusive date range and rounds the average to one decimal. The daily query returns its readings in slot order alongside the statistics. Empty reports return a count of zero and null statistics.
+- **Reports.** PostgreSQL aggregates each inclusive date range and rounds the average to one decimal. The daily query returns its readings in slot order alongside the statistics. Empty reports return a count of zero and null statistics. The monthly chart uses the signed-in user's reading history to plot a daily average for the month shown in the date picker. Days without readings appear as gaps.
 
 ## API
 
@@ -89,7 +89,7 @@ Create and update accept JSON such as `{"date":"2026-10-15","slot":1,"value":105
 ## Assumptions and future work
 
 - Dates represent calendar days in one configurable application timezone. Readings use mg/dl.
-- The history loads in one request, which suits the assessment dataset. Pagination and a monthly trend chart would help as histories grow.
+- The history loads in one request, which suits the assessment dataset. Pagination and server-side chart aggregation would help as histories grow.
 - A multi-instance deployment would benefit from shared rate limits and automatic expired-session cleanup. The current server uses an in-memory authentication rate limit and cleans expired sessions during sign-in.
 
 ## Demo walkthrough

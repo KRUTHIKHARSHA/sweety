@@ -4,12 +4,13 @@ import { api } from './api.js';
 import Auth from './Auth.jsx';
 import ReadingDialog from './ReadingDialog.jsx';
 import Reports from './Reports.jsx';
-import { Brand, ErrorText, formatDate, Icon } from './ui.jsx';
+import { DatePicker } from './Pickers.jsx';
+import { Avatar, Brand, ErrorText, formatDate, Icon } from './ui.jsx';
 
 const pages = [
-  { id: 'dashboard', label: 'Dashboard', icon: 'grid', title: 'Dashboard', description: 'Log and review your glucose readings for the selected day.' },
-  { id: 'history', label: 'Reading history', icon: 'list', title: 'Reading history', description: 'View, edit, and manage all your recorded glucose readings.' },
-  { id: 'reports', label: 'Reports', icon: 'chart', title: 'Reports', description: 'Review your daily, month-to-date, and previous-month summaries.' },
+  { id: 'dashboard', label: 'Dashboard', icon: 'grid', description: 'Log your glucose from fasting through dinner.' },
+  { id: 'history', label: 'Reading history', icon: 'list', description: 'Find and manage your past glucose readings.' },
+  { id: 'reports', label: 'Reports', icon: 'chart', description: 'Compare your daily and monthly glucose summaries.' },
 ];
 
 function Workspace({ session, onUnauthorized }) {
@@ -38,6 +39,7 @@ function Workspace({ session, onUnauthorized }) {
 
   const daily = (readings ?? []).filter((reading) => reading.date === date);
   const firstOpenSlot = SLOTS.find(({ id }) => !daily.some((reading) => reading.slot === id));
+  const dayComplete = page.id === 'dashboard' && !firstOpenSlot;
   const add = (slot = firstOpenSlot?.id ?? 1) => {
     setNotice('');
     setAction({ kind: 'add', reading: { date, slot } });
@@ -82,14 +84,13 @@ function Workspace({ session, onUnauthorized }) {
     <aside className="sidebar">
       <Brand />
       <nav aria-label="Main navigation">
-        <span className="nav-heading">WORKSPACE</span>
         {pages.map((item) => <button key={item.id} type="button"
           aria-current={item.id === page.id ? 'page' : undefined} onClick={() => { setPage(item); setNotice(''); }}>
           <Icon name={item.icon} size={19} /> {item.label}
         </button>)}
       </nav>
       <div className="account">
-        <div className="profile"><span className="avatar">{Array.from(session.user.name)[0].toUpperCase()}</span>
+        <div className="profile"><Avatar user={session.user} />
           <div><strong>{session.user.name}</strong><small>Personal account</small></div>
         </div>
         <button type="button" className="sign-out" disabled={signingOut} onClick={signOut}><Icon name="exit" size={18} /> Sign out</button>
@@ -97,28 +98,33 @@ function Workspace({ session, onUnauthorized }) {
     </aside>
     <main className="content">
       <header className="page-header">
-        <div><span className="eyebrow">BLOOD GLUCOSE TRACKER</span><h1>{page.title}</h1><p className="muted">{page.description}</p></div>
-        {page.id !== 'reports' && <button className="button primary" disabled={!readings || (page.id === 'dashboard' && !firstOpenSlot)}
+        <div><h1>{page.label}</h1><p className="muted">{page.description}</p></div>
+        {page.id !== 'reports' && !dayComplete && <button className="button primary" disabled={!readings}
           onClick={() => add()}><Icon name="plus" size={19} /> Add reading</button>}
       </header>
       <ErrorText>{error}</ErrorText>
       {!readings && error && <button className="button secondary" onClick={() => { setError(''); setAttempt(attempt + 1); }}>Retry loading readings</button>}
       {notice && <p className="notice" role="status"><Icon name="check" size={18} /> {notice}</p>}
       {page.id !== 'history' && <div className="date-panel panel">
-        <span className="date-icon"><Icon name="calendar" /></span>
-        <label htmlFor="selected-date">Selected date<small>Choose a day to review</small></label>
-        <input id="selected-date" type="date" value={date} max={today} onChange={(event) => {
-          if (event.target.validity.valid && event.target.value) setDate(event.target.value);
-        }} />
+        <span className="picker-label">Selected date</span>
+        <DatePicker label="Selected date" value={date} max={today} onChange={setDate} />
       </div>}
       {page.id === 'dashboard' && (readings ? <>
-        <div className="section-heading"><div><h2>Daily readings</h2><p className="muted">{formatDate(date)}</p></div>
-          <span className="badge">{daily.length} / 4 recorded</span></div>
+        <div className="section-heading"><h2>Daily readings</h2>
+          <span className="reading-progress">
+            <span className="progress-ticks" aria-hidden="true">{SLOTS.map(({ id }) =>
+              <span key={id} className={daily.some((reading) => reading.slot === id) ? 'filled' : undefined} />
+            )}</span>
+            {daily.length} / {SLOTS.length} recorded
+          </span>
+        </div>
         <div className="slot-grid">{SLOTS.map((slot) => {
           const reading = daily.find((item) => item.slot === slot.id);
           return <section className="panel slot-card" key={slot.id}>
-            <span className={'slot-icon slot-' + slot.id}><Icon name={slot.icon} size={22} /></span>
-            <h3>{slot.label}</h3>
+            <div className="slot-heading">
+              <span className={'slot-icon slot-' + slot.id}><Icon name={slot.icon} size={20} /></span>
+              <h3>{slot.label}</h3>
+            </div>
             {reading ? <p className="slot-value">{reading.value} <small>mg/dl</small></p> : <p className="muted slot-empty">No reading yet</p>}
             <button className="text-button slot-action" onClick={() => reading ? open('edit', reading) : add(slot.id)}
               aria-label={`${reading ? 'Edit' : 'Add'} ${slot.label} reading`}>
@@ -126,7 +132,6 @@ function Workspace({ session, onUnauthorized }) {
             </button>
           </section>;
         })}</div>
-        <div className="info-note"><Icon name="drop" size={19} /> Each day has four slots. You can save one glucose reading in each slot.</div>
       </> : !error && <p role="status" className="muted">Loading readings…</p>)}
       {page.id === 'history' && (readings ? <section className="panel history">
         {readings.length ? <div className="table-scroll"><table>
@@ -144,7 +149,7 @@ function Workspace({ session, onUnauthorized }) {
           </tr>)}</tbody>
         </table></div> : <div className="empty-state"><Icon name="list" size={28} /><h2>No readings yet</h2><p className="muted">Add your first reading to start your history.</p></div>}
       </section> : !error && <p role="status" className="muted">Loading readings…</p>)}
-      {page.id === 'reports' && <Reports key={date} date={date} onUnauthorized={onUnauthorized} />}
+      {page.id === 'reports' && <Reports key={date} date={date} history={readings} onUnauthorized={onUnauthorized} />}
     </main>
     {action && <ReadingDialog action={action} today={today} onClose={() => setAction(null)} onSave={save} />}
   </div>;

@@ -25,6 +25,8 @@ try {
        INSERT INTO readings (user_id, reading_date, time_slot, glucose_value)
        SELECT $1, demo.day, demo.slot, demo.value FROM dates CROSS JOIN LATERAL (
          VALUES (today, 1, 96), (today, 2, 132), (today, 3, 144), (today, 4, 119),
+                (today - 1, 1, 102), (today - 1, 3, 151),
+                (today - 2, 1, 92), (today - 2, 3, 130),
                 (month_start, 1, 101), (month_start, 3, 137),
                 (month_start - 1, 1, 94), (month_start - 1, 4, 124),
                 (month_start - 5, 2, 128), (month_start - 5, 3, 142)

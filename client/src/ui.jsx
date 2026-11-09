@@ -1,5 +1,6 @@
+import sweetyMark from './assets/sweety-mark.svg';
+
 const paths = {
-  drop: 'M12 2C9 6 5 10 5 14a7 7 0 0 0 14 0c0-4-4-8-7-12Z M8.5 14.5a3.5 3.5 0 0 0 3.5 3.5',
   grid: 'M3 3h7v7H3z M14 3h7v7h-7z M3 14h7v7H3z M14 14h7v7h-7z',
   list: 'M9 5h12 M9 12h12 M9 19h12 M3 5h1 M3 12h1 M3 19h1',
   chart: 'M3 3v18h18 M8 16v-4 M13 16V8 M18 16v-6',
@@ -13,6 +14,10 @@ const paths = {
   trash: 'M3 6h18 M9 6V3h6v3 M6 6l1 15h10l1-15 M10 10v7 M14 10v7',
   close: 'M6 6l12 12 M18 6 6 18',
   calendar: 'M4 5h16v15H4z M4 10h16 M8 3v4 M16 3v4',
+  previous: 'M15 6l-6 6 6 6',
+  next: 'M9 6l6 6-6 6',
+  chevron: 'M6 9l6 6 6-6',
+  person: 'M16 8a4 4 0 1 1-8 0 4 4 0 0 1 8 0Z M4 21v-1a5 5 0 0 1 5-5h6a5 5 0 0 1 5 5v1',
   check: 'M5 12l4 4L19 6',
 };
 
@@ -24,9 +29,16 @@ export function Icon({ name, size = 20 }) {
 }
 
 export function Brand() {
-  return <div className="brand"><span className="brand-icon"><Icon name="drop" size={23} /></span>
+  return <div className="brand"><img className="brand-icon" src={sweetyMark} alt="" width="43" height="43" />
     <div><strong>Sweety</strong><small>GLUCOSE TRACKER</small></div>
   </div>;
+}
+
+const avatarPalettes = ['sage', 'clay', 'lavender', 'gold'];
+
+export function Avatar({ user }) {
+  const palette = avatarPalettes[user.id % avatarPalettes.length];
+  return <span className={`avatar avatar-${palette}`} aria-hidden="true"><Icon name="person" size={19} /></span>;
 }
 
 const dateFormat = new Intl.DateTimeFormat('en-GB', {
