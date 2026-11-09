@@ -1,11 +1,35 @@
-# Sweety · Blood Glucose Tracker
+<p align="center">
+  <img src="./client/src/assets/sweety-mark.svg" width="72" height="72" alt="Sweety logo">
+</p>
+<h1 align="center">Sweety</h1>
+<p align="center"><strong>Personal blood glucose tracker</strong></p>
+<p align="center">A take-home project for Kenpath Technologies.</p>
+<p align="center">
+  <a href="#screenshots">Screenshots</a> ·
+  <a href="#run-locally">Run locally</a> ·
+  <a href="#4-run-tests">Run tests</a> ·
+  <a href="#api">API</a>
+</p>
 
-Sweety is a standalone take-home project for Kenpath Technologies. Users can register, track personal glucose readings across four daily time slots, and review daily, month-to-date, and previous-month summaries.
+[![Sweety dashboard with four daily glucose readings](./screenshots/02-dashboard.png)](./screenshots/02-dashboard.png)
 
-- **Client** · React, JavaScript, HTML and CSS, built with Vite
-- **API** · Node.js, Express, and REST
-- **Storage and authentication** · PostgreSQL, node-postgres, bcrypt, and server-side sessions
-- **Tests** · Node's built-in test runner and Supertest against PostgreSQL
+## Features
+
+| Area | What you can do |
+| --- | --- |
+| Daily dashboard | Pick a date and log fasting, after-breakfast, after-lunch, and after-dinner readings. |
+| Reading history | Review past entries and edit or delete individual readings. |
+| Reports | Compare daily, month-to-date, and previous-month summaries. Explore daily averages in the monthly trend chart. |
+| Private accounts | Register and sign in to manage your own readings. The interface adapts to desktop and mobile. |
+
+## Tech stack
+
+| Layer | Tools |
+| --- | --- |
+| Frontend | React, JavaScript, HTML, CSS, and Vite |
+| API | Node.js and Express |
+| Data and authentication | PostgreSQL, node-postgres, bcrypt, and server-side sessions |
+| Integration tests | Node.js test runner and Supertest against PostgreSQL |
 
 ## Run locally
 
@@ -92,8 +116,29 @@ Create and update accept JSON such as `{"date":"2026-10-15","slot":1,"value":105
 - The history loads in one request, which suits the assessment dataset. Pagination and server-side chart aggregation would help as histories grow.
 - A multi-instance deployment would benefit from shared rate limits and automatic expired-session cleanup. The current server uses an in-memory authentication rate limit and cleans expired sessions during sign-in.
 
-## Demo walkthrough
+## Screenshots
+
+The screenshots use fictional demo data. Select an image to view it full size.
+
+<table>
+  <tr>
+    <th>Sign-in</th>
+    <th>Reading history</th>
+  </tr>
+  <tr>
+    <td><a href="./screenshots/01-sign-in.png"><img src="./screenshots/01-sign-in.png" width="420" alt="Sweety sign-in form beside a glucose meter photograph"></a></td>
+    <td><a href="./screenshots/03-reading-history.png"><img src="./screenshots/03-reading-history.png" width="420" alt="Reading history with dates, time slots, values, and edit and delete actions"></a></td>
+  </tr>
+  <tr>
+    <th>Reports and monthly trend</th>
+    <th>Mobile reports</th>
+  </tr>
+  <tr>
+    <td valign="top"><a href="./screenshots/04-reports.png"><img src="./screenshots/04-reports.png" width="420" alt="Daily, month-to-date, and previous-month reports above a line chart"></a></td>
+    <td valign="top" align="center"><a href="./screenshots/05-mobile-reports.png"><img src="./screenshots/05-mobile-reports.png" width="180" alt="Sweety reports stacked vertically on a phone"></a></td>
+  </tr>
+</table>
+
+### Demo walkthrough
 
 Sign in with the fictional account and review the four dashboard slots. Open Reading history to edit a value, then open Reports and change the date to compare the three reporting periods. Register a fresh fictional account to see the empty dashboard and add, edit, and delete a reading.
-
-[Sign-in](screenshots/01-sign-in.png) · [Dashboard](screenshots/02-dashboard.png) · [Reading history](screenshots/03-reading-history.png) · [Reports](screenshots/04-reports.png) · [Mobile reports](screenshots/05-mobile-reports.png)
