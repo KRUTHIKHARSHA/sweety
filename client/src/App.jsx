@@ -38,7 +38,7 @@ function Workspace({ session, onUnauthorized }) {
 
   const daily = (readings ?? []).filter((reading) => reading.date === date);
   const firstOpenSlot = SLOTS.find(({ id }) => !daily.some((reading) => reading.slot === id));
-  const add = (slot = firstOpenSlot?.id) => {
+  const add = (slot = firstOpenSlot?.id ?? 1) => {
     setNotice('');
     setAction({ kind: 'add', reading: { date, slot } });
   };
@@ -98,7 +98,7 @@ function Workspace({ session, onUnauthorized }) {
     <main className="content">
       <header className="page-header">
         <div><span className="eyebrow">BLOOD GLUCOSE TRACKER</span><h1>{page.title}</h1><p className="muted">{page.description}</p></div>
-        {page.id !== 'reports' && <button className="button primary" disabled={!readings || !firstOpenSlot}
+        {page.id !== 'reports' && <button className="button primary" disabled={!readings || (page.id === 'dashboard' && !firstOpenSlot)}
           onClick={() => add()}><Icon name="plus" size={19} /> Add reading</button>}
       </header>
       <ErrorText>{error}</ErrorText>

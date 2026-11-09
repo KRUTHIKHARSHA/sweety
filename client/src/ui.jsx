@@ -33,7 +33,8 @@ const dateFormat = new Intl.DateTimeFormat('en-GB', {
   day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC',
 });
 export function formatDate(date) {
-  return dateFormat.format(new Date(date + 'T00:00:00Z'));
+  const parsed = new Date(date + 'T00:00:00Z');
+  return Number.isNaN(parsed.valueOf()) ? date : dateFormat.format(parsed);
 }
 
 export function ErrorText({ children }) {

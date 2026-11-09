@@ -28,11 +28,18 @@ export function authRoutes(db, today, { secureCookies, passwordCost }) {
   });
   const fallbackHash = bcrypt.hash(randomBytes(32).toString('hex'), passwordCost);
 
-  async function startSession(req, res, user, status) {
+  async function storeSession(connection, req, user) {
     const token = randomBytes(32).toString('hex');
-    await db.query('DELETE FROM sessions WHERE expires_at <= now() OR token_hash = $1', [sessionHash(req)]);
-    await db.query('INSERT INTO sessions (token_hash, user_id, expires_at) VALUES ($1, $2, $3)',
-      [hashToken(token), user.id, new Date(Date.now() + lifetime)]);
+    await connection.query(
+      `WITH revoked AS (
+         DELETE FROM sessions WHERE expires_at <= now() OR token_hash = $1
+       )
+       INSERT INTO sessions (token_hash, user_id, expires_at) VALUES ($2, $3, $4)`,
+      [sessionHash(req), hashToken(token), user.id, new Date(Date.now() + lifetime)]);
+    return token;
+  }
+
+  function sendSession(res, user, token, status) {
     res.cookie(cookieName, token, { ...cookieOptions, maxAge: lifetime })
       .status(status).json({ user, today: today() });
   }
@@ -61,12 +68,26 @@ export function authRoutes(db, today, { secureCookies, passwordCost }) {
       return res.status(400).json({ error: 'Use a password of at least 8 characters and at most 72 bytes.' });
     }
     const passwordHash = await bcrypt.hash(password, passwordCost);
-    const { rows: [user] } = await db.query(
-      `INSERT INTO users (name, email, password_hash) VALUES ($1, $2, $3)
-       ON CONFLICT (email) DO NOTHING RETURNING id, name, email`,
-      [cleanName, cleanEmail, passwordHash]);
-    if (!user) return res.status(409).json({ error: 'An account already uses this email.' });
-    await startSession(req, res, user, 201);
+    const connection = await db.connect();
+    try {
+      await connection.query('BEGIN');
+      const { rows: [user] } = await connection.query(
+        `INSERT INTO users (name, email, password_hash) VALUES ($1, $2, $3)
+         ON CONFLICT (email) DO NOTHING RETURNING id, name, email`,
+        [cleanName, cleanEmail, passwordHash]);
+      if (!user) {
+        await connection.query('ROLLBACK');
+        return res.status(409).json({ error: 'An account already uses this email.' });
+      }
+      const token = await storeSession(connection, req, user);
+      await connection.query('COMMIT');
+      sendSession(res, user, token, 201);
+    } catch (error) {
+      await connection.query('ROLLBACK');
+      throw error;
+    } finally {
+      connection.release();
+    }
   });
 
   router.post('/login', limiter, async (req, res) => {
@@ -79,8 +100,9 @@ export function authRoutes(db, today, { secureCookies, passwordCost }) {
       'SELECT id, name, email, password_hash FROM users WHERE email = $1', [email.trim().toLowerCase()]);
     const matches = await bcrypt.compare(password, record?.password_hash ?? await fallbackHash);
     if (!matches || !record) return res.status(401).json({ error: invalidLogin });
-    const { id, name } = record;
-    await startSession(req, res, { id, name, email: record.email }, 200);
+    const { id, name, email: accountEmail } = record;
+    const user = { id, name, email: accountEmail };
+    sendSession(res, user, await storeSession(db, req, user), 200);
   });
 
   router.get('/me', requireUser, (req, res) => res.json({ user: req.user, today: today() }));
